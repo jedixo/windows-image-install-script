@@ -10,6 +10,9 @@ set WindowsVersion=1
 if "%1"=="" goto windows_version
 set automated=1
 goto partition_schema_settings
+
+
+
 :windows_version
 cls
 echo **************************************************************************************************
@@ -189,6 +192,10 @@ echo ---------------------------------------------------------------------------
 echo ***************************************************************************
 echo.
 diskpart /s "%~dp0part.txt"
+
+echo %WindowsVersion%|find ".swm" >nul
+if errorlevel 1 (goto cwim) else CALL :cswm %WindowsVersion%
+:cwim
 dism /Apply-Image /ImageFile:%WindowsVersion% /Index:1 /ApplyDir:W:\
 if %PartitionSchema% EQU gpt (
 	x:\Windows\System32\bcdboot W:\Windows /s S:
@@ -200,6 +207,20 @@ copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
 W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
 W:\Windows\System32\Reagentc /Info /Target W:\Windows
 goto exit
+
+:cswm
+dism /Apply-Image /ImageFile:%1 /SWMfile:%~dpn1*.swm /Index:1 /ApplyDir:W:\
+if %PartitionSchema% EQU gpt (
+	x:\Windows\System32\bcdboot W:\Windows /s S:
+) else (
+	x:\Windows\System32\bcdboot W:\Windows
+)
+md R:\Recovery\WindowsRE
+copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
+W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
+W:\Windows\System32\Reagentc /Info /Target W:\Windows
+goto exit
+
 :custom
 title Windows Setup - %firmware_type% - %PROCESSOR_ARCHITECTURE% - %1
 cls
@@ -211,6 +232,11 @@ echo ---------------------------------------------------------------------------
 echo ***************************************************************************
 echo.
 diskpart /s "%~dp0part.txt"
+
+echo %1|find ".swm" >nul
+if errorlevel 1 (goto awim) else goto aswm
+
+:awim
 dism /Apply-Image /ImageFile:%1 /Index:1 /ApplyDir:W:\
 if %PartitionSchema% EQU gpt (
     x:\Windows\System32\bcdboot W:\Windows /s S:
@@ -221,6 +247,20 @@ md R:\Recovery\WindowsRE
 copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
 W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
 W:\Windows\System32\Reagentc /Info /Target W:\Windows
+goto exit
+
+:aswm
+dism /Apply-Image /ImageFile:%1 /SWMfile:%~dpn1*.swm /Index:1 /ApplyDir:W:\
+if %PartitionSchema% EQU gpt (
+	x:\Windows\System32\bcdboot W:\Windows /s S:
+) else (
+	x:\Windows\System32\bcdboot W:\Windows
+)
+md R:\Recovery\WindowsRE
+copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
+W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
+W:\Windows\System32\Reagentc /Info /Target W:\Windows
+goto exit
 
 :exit
 echo ***************************************************************************
