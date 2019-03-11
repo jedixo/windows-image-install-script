@@ -235,5 +235,5 @@ echo.
 echo.
 pause
 del "%~dp0part.txt"
-del "y:\installimages\list.txt"
+del "%~dp0list.txt"
 exit
