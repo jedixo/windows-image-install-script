@@ -2,8 +2,10 @@
 REM Jake's install tool for WIM / SWM / ESD images.
 REM execute install.bat and select installation OR drag a custom wim onto install.bat to install it
 
+
 cls
 title Windows Setup - %firmware_type% - %PROCESSOR_ARCHITECTURE% - 
+set imagefolder=%~dp0
 set automated=0
 set PartitionSchema=mbr
 set WindowsVersion=1
@@ -167,16 +169,16 @@ echo ***************************************************************************
 echo.
 diskpart /s "%~dp0part.txt"
 if %WindowsVersion% EQU 8 (
-	dism /Apply-Image /ImageFile:"y:\installimages\xp.wim" /Index:1 /ApplyDir:w:\
+	dism /Apply-Image /ImageFile:"%imagefolder%xp.wim" /Index:1 /ApplyDir:w:\
 ) else (
-	dism /Apply-Image /ImageFile:"y:\installimages\combined.swm" /SWMFile:"y:\installimages\combined*.swm" /Index:%WindowsVersion% /ApplyDir:W:\
+	dism /Apply-Image /ImageFile:"%imagefolder%combined.swm" /SWMFile:"%imagefolder%combined*.swm" /Index:%WindowsVersion% /ApplyDir:W:\
 	if %PartitionSchema% EQU gpt (
-		x:\Windows\System32\bcdboot W:\Windows /s S:
+		%WINDIR%\System32\bcdboot W:\Windows /s S:
 	) else (
-		x:\Windows\System32\bcdboot W:\Windows
+		%WINDIR%\System32\bcdboot W:\Windows
 	)
 	md R:\Recovery\WindowsRE
-	copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
+	copy %imagefolder%winre.wim R:\Recovery\WindowsRE\winre.wim
 	W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
 	W:\Windows\System32\Reagentc /Info /Target W:\Windows
 )
@@ -198,12 +200,12 @@ if errorlevel 1 (goto cwim) else CALL :cswm %WindowsVersion%
 :cwim
 dism /Apply-Image /ImageFile:%WindowsVersion% /Index:1 /ApplyDir:W:\
 if %PartitionSchema% EQU gpt (
-	x:\Windows\System32\bcdboot W:\Windows /s S:
+	%WINDIR%\System32\bcdboot W:\Windows /s S:
 ) else (
-	x:\Windows\System32\bcdboot W:\Windows
+	%WINDIR%\System32\bcdboot W:\Windows
 )
 md R:\Recovery\WindowsRE
-copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
+copy %imagefolder%winre.wim R:\Recovery\WindowsRE\winre.wim
 W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
 W:\Windows\System32\Reagentc /Info /Target W:\Windows
 goto exit
@@ -211,12 +213,12 @@ goto exit
 :cswm
 dism /Apply-Image /ImageFile:%1 /SWMfile:%~dpn1*.swm /Index:1 /ApplyDir:W:\
 if %PartitionSchema% EQU gpt (
-	x:\Windows\System32\bcdboot W:\Windows /s S:
+	%WINDIR%\System32\bcdboot W:\Windows /s S:
 ) else (
-	x:\Windows\System32\bcdboot W:\Windows
+	%WINDIR%\System32\bcdboot W:\Windows
 )
 md R:\Recovery\WindowsRE
-copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
+copy %imagefolder%winre.wim R:\Recovery\WindowsRE\winre.wim
 W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
 W:\Windows\System32\Reagentc /Info /Target W:\Windows
 goto exit
@@ -239,12 +241,12 @@ if errorlevel 1 (goto awim) else goto aswm
 :awim
 dism /Apply-Image /ImageFile:%1 /Index:1 /ApplyDir:W:\
 if %PartitionSchema% EQU gpt (
-    x:\Windows\System32\bcdboot W:\Windows /s S:
+    %WINDIR%\System32\bcdboot W:\Windows /s S:
 ) else (
-    x:\Windows\System32\bcdboot W:\Windows
+    %WINDIR%\System32\bcdboot W:\Windows
 )
 md R:\Recovery\WindowsRE
-copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
+copy %imagefolder%winre.wim R:\Recovery\WindowsRE\winre.wim
 W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
 W:\Windows\System32\Reagentc /Info /Target W:\Windows
 goto exit
@@ -252,12 +254,12 @@ goto exit
 :aswm
 dism /Apply-Image /ImageFile:%1 /SWMfile:%~dpn1*.swm /Index:1 /ApplyDir:W:\
 if %PartitionSchema% EQU gpt (
-	x:\Windows\System32\bcdboot W:\Windows /s S:
+	%WINDIR%\System32\bcdboot W:\Windows /s S:
 ) else (
-	x:\Windows\System32\bcdboot W:\Windows
+	%WINDIR%\System32\bcdboot W:\Windows
 )
 md R:\Recovery\WindowsRE
-copy y:\installimages\winre.wim R:\Recovery\WindowsRE\winre.wim
+copy %imagefolder%winre.wim R:\Recovery\WindowsRE\winre.wim
 W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\Windows
 W:\Windows\System32\Reagentc /Info /Target W:\Windows
 goto exit
