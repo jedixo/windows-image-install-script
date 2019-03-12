@@ -35,12 +35,20 @@ echo         4        Microsoft Windows Server   Datacenter Core                
 echo         5        Microsoft Windows Server   Datacenter With Desktop Experience   2019   (x64) 
 echo         6        Microsoft Windows 7        Professional                         SP1    (x64) 
 echo         7        Microsoft Windows 7        Enteprise                            SP1    (x64) 
-echo         8        Microsoft Windows XP       Professional                         SP3    (x86) 
+echo         8        Microsoft Windows XP       Professional                         SP3    (x86)
+if exist %SYSTEMDRIVE%\setup.exe (
+echo         s        Launch Windows Setup
+)
+echo         x        Exit                                                                          
 echo.
 echo To install a custom wim, drag and drop it here or onto install.bat or type a path.
 echo.
 set /p WindowsVersion=Enter a selection/path: 
 if "%windowsVersion%"=="" goto windows_version
+if %WindowsVersion% EQU x goto exit
+if exist %SYSTEMDRIVE%\setup.exe (
+if %WindowsVersion% EQU s goto winsetup
+)
 if %WindowsVersion% EQU 8 goto setup
 if %WindowsVersion% EQU 1 goto partition_schema_settings
 if %WindowsVersion% EQU 2 goto partition_schema_settings
@@ -186,12 +194,12 @@ goto exit
 :customdrag
 title Windows Setup - %firmware_type% - %PROCESSOR_ARCHITECTURE% - %WindowsVersion%
 cls
-echo ***************************************************************************
-echo ---------------------------------------------------------------------------
-echo        Windows Deployment Utility for Windows Images
-echo                            By: Jake DIxon
-echo ---------------------------------------------------------------------------
-echo ***************************************************************************
+echo **************************************************************************************************
+echo --------------------------------------------------------------------------------------------------
+echo                    Windows Deployment Utility for Windows Images
+echo                                        By: Jake DIxon
+echo --------------------------------------------------------------------------------------------------
+echo **************************************************************************************************
 echo.
 diskpart /s "%~dp0part.txt"
 
@@ -226,12 +234,12 @@ goto exit
 :custom
 title Windows Setup - %firmware_type% - %PROCESSOR_ARCHITECTURE% - %1
 cls
-echo ***************************************************************************
-echo ---------------------------------------------------------------------------
-echo        Windows Deployment Utility for Windows Images
-echo                            By: Jake DIxon
-echo ---------------------------------------------------------------------------
-echo ***************************************************************************
+echo **************************************************************************************************
+echo --------------------------------------------------------------------------------------------------
+echo                    Windows Deployment Utility for Windows Images
+echo                                        By: Jake DIxon
+echo --------------------------------------------------------------------------------------------------
+echo **************************************************************************************************
 echo.
 diskpart /s "%~dp0part.txt"
 
@@ -264,13 +272,17 @@ W:\Windows\System32\Reagentc /Setreimage /Path R:\Recovery\WindowsRE /Target W:\
 W:\Windows\System32\Reagentc /Info /Target W:\Windows
 goto exit
 
+:winsetup
+%SYSTEMDRIVE%\setup.exe
+goto exit
+
 :exit
-echo ***************************************************************************
-echo ---------------------------------------------------------------------------
-echo        Windows Deployment Utility for Windows Images
-echo                            By: Jake DIxon
-echo ---------------------------------------------------------------------------
-echo ***************************************************************************
+echo **************************************************************************************************
+echo --------------------------------------------------------------------------------------------------
+echo                    Windows Deployment Utility for Windows Images
+echo                                        By: Jake DIxon
+echo --------------------------------------------------------------------------------------------------
+echo **************************************************************************************************
 echo.
 echo          The Installer Has Finished, please reboot the computer
 echo.
