@@ -35,8 +35,11 @@ echo         4        Microsoft Windows Server   Datacenter Core                
 echo         5        Microsoft Windows Server   Datacenter With Desktop Experience   2019   (x64) 
 echo         6        Microsoft Windows 7        Professional                         SP1    (x64) 
 echo         7        Microsoft Windows 7        Enteprise                            SP1    (x64) 
-echo         8        Microsoft Windows XP       Professional                         SP3    (x86)
-if exist %SYSTEMDRIVE%\setup.exe (
+echo         8        Microsoft Windows Server   Datacenter With Desktop Experience   2008R2 (x64) 
+echo         9        Microsoft Windows Server   Datacenter With Desktop Experience   2012R2 (x64) 
+echo         10       Microsoft Windows Vista    Ultimate                             SP2    (x64) 
+echo         11       Microsoft Windows XP       Professional                         SP3    (x86)
+if exist %~d1\sources\setup.exe (
 echo         s        Launch Windows Setup
 )
 echo         x        Exit                                                                          
@@ -46,10 +49,10 @@ echo.
 set /p WindowsVersion=Enter a selection/path: 
 if "%windowsVersion%"=="" goto windows_version
 if %WindowsVersion% EQU x goto exit
-if exist %SYSTEMDRIVE%\setup.exe (
+if exist %~d1\sources\setup.exe (
 if %WindowsVersion% EQU s goto winsetup
 )
-if %WindowsVersion% EQU 8 goto setup
+if %WindowsVersion% EQU 11 goto setup
 if %WindowsVersion% EQU 1 goto partition_schema_settings
 if %WindowsVersion% EQU 2 goto partition_schema_settings
 if %WindowsVersion% EQU 3 goto partition_schema_settings
@@ -57,6 +60,9 @@ if %WindowsVersion% EQU 4 goto partition_schema_settings
 if %WindowsVersion% EQU 5 goto partition_schema_settings
 if %WindowsVersion% EQU 6 goto partition_schema_settings
 if %WindowsVersion% EQU 7 goto partition_schema_settings
+if %WindowsVersion% EQU 8 goto partition_schema_settings
+if %WindowsVersion% EQU 9 goto partition_schema_settings
+if %WindowsVersion% EQU 10 goto partition_schema_settings
 echo %WindowsVersion%|find ".wim" >nul
 if errorlevel 1 (echo.) else goto drag
 echo %WindowsVersion%|find ".swm" >nul
@@ -89,7 +95,6 @@ goto setup
 :setup
 if %automated% EQU 1 (
   set disk=0
-  pause
   goto dpprocess
 ) 
 	echo list disk	> "%~dp0list.txt"
@@ -117,7 +122,7 @@ IF %PartitionSchema% EQU gpt (
 	echo assign letter^=^"S^"				>> "%~dp0part.txt"
 	echo create partition msr size^=16			>> "%~dp0part.txt"
 ) ELSE (
-	IF %WindowsVersion% NEQ 8 (
+	IF %WindowsVersion% NEQ 10 (
 		echo create partition primary size^=100			>> "%~dp0part.txt"
 		echo format quick fs^=ntfs label^=^"System^"		>> "%~dp0part.txt"
 		echo assign letter^=^"S^"				>> "%~dp0part.txt"
@@ -127,11 +132,11 @@ IF %PartitionSchema% EQU gpt (
 echo create partition primary					>> "%~dp0part.txt"
 echo shrink minimum^=500					>> "%~dp0part.txt"
 echo format quick fs^=ntfs label^=^"Windows^"			>> "%~dp0part.txt"
-if %WindowsVersion% EQU 8 (
+if %WindowsVersion% EQU 11 (
 	echo active						>> "%~dp0part.txt"
 ) 
 echo assign letter^=^"W^"					>> "%~dp0part.txt"
-if %WindowsVersion% NEQ 8 (
+if %WindowsVersion% NEQ 10 (
 	echo create partition primary				>> "%~dp0part.txt"
 	echo format quick fs^=ntfs label^=^"Recovery Tools^"	>> "%~dp0part.txt"
 	echo assign letter^=^"R^"				>> "%~dp0part.txt"
@@ -176,10 +181,10 @@ echo ---------------------------------------------------------------------------
 echo **************************************************************************************************
 echo.
 diskpart /s "%~dp0part.txt"
-if %WindowsVersion% EQU 8 (
+if %WindowsVersion% EQU 11 (
 	dism /Apply-Image /ImageFile:"%imagefolder%xp.wim" /Index:1 /ApplyDir:w:\
 ) else (
-	dism /Apply-Image /ImageFile:"%imagefolder%combined.swm" /SWMFile:"%imagefolder%combined*.swm" /Index:%WindowsVersion% /ApplyDir:W:\
+	dism /Apply-Image /ImageFile:"%imagefolder%install.swm" /SWMFile:"%imagefolder%install*.swm" /Index:%WindowsVersion% /ApplyDir:W:\
 	if %PartitionSchema% EQU gpt (
 		%WINDIR%\System32\bcdboot W:\Windows /s S:
 	) else (
@@ -273,7 +278,7 @@ W:\Windows\System32\Reagentc /Info /Target W:\Windows
 goto exit
 
 :winsetup
-%SYSTEMDRIVE%\setup.exe
+%~d1\sources\setup.exe /installfrom:%~dp1install.swm
 goto exit
 
 :exit
